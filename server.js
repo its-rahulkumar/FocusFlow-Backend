@@ -789,6 +789,18 @@ app.post('/api/paywall/redeem', authLimiter, verifyUserJWT, async (req, res) => 
     }
 });
 
+// ── Database Health Check ──
+app.get('/api/health/db', authLimiter, async (req, res) => {
+    try {
+        await ensureTablesExist();
+        const timeRes = await sql`SELECT NOW()`;
+        res.json({ status: 'connected', serverTime: timeRes[0].now });
+    } catch (err) {
+        console.error('[Health] DB Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'production') {
